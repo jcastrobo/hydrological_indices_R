@@ -1,0 +1,70 @@
+---
+title: "Flow duration curve"
+author: "John_Erick_Castro"
+date: "2022-10-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=FALSE}
+library(hydroTSM)
+library(lubridate)
+library(tidyverse)
+```
+
+```{r}
+a<-read.csv2("Cuenca_1.csv", header = T)
+a
+```
+
+```{r}
+area_km<-4.5559512
+area_m<-area_km*1000000
+res_temp_min<-5
+
+a %>%
+  mutate(Q_mm = Q_ls / 1000 * res_temp_min * 60 / area_m * 1000)->a
+```
+
+```{r}
+RH <- sum(a$Q_mm)/sum(a$P_mm)
+RH
+```
+
+Dado que se tienen columnas de la dimensión tiempo, se procede a convertir el respectivo formato de fecha y hora.
+
+```{r}
+a %>%
+  mutate(Fecha = dmy(Fecha)) %>%
+  group_by(Fecha) %>%
+  summarise(qd = sum(Q_mm), qd_ls = mean(Q_ls))-> b
+b
+```
+
+```{r}
+dailyQ<-b$qd
+d<-NULL
+
+for (i in 2:length(dailyQ)){
+  d<-c(d,abs(dailyQ[i]-dailyQ[i-1]))
+}
+
+head(d)
+
+```
+
+```{r}
+BFI<-sum(d)/sum(dailyQ)
+BFI
+```
+
+
+
+```{r}
+fdc<-fdc(x = b$qd_ls, plot = TRUE, main = "Curva de duración de caudales cuenca_1", ylab = "Q [L/s]", xlab = "% tiempo de flujo igualado o excedido", lQ.thr = 0.50, hQ.thr = 1, col = "black", )
+
+```
+

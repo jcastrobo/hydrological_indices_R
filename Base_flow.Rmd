@@ -1,0 +1,41 @@
+---
+title: "Baseflow_separation"
+author: "John_Erick_Castro"
+date: "2022-10-24"
+output: html_document
+---
+
+```{r, warning=FALSE}
+library(EcoHydRology)
+library(tidyverse, warn.conflicts = F)
+library(lubridate)
+```
+
+```{r}
+data<-read.csv2("Evento_pto1.csv", header = TRUE)
+data
+```
+
+```{r}
+glimpse(data)
+```
+
+
+```{r}
+data<-data %>%
+  mutate(Fecha = dmy(Fecha))
+
+```
+
+
+```{r}
+bfv<-BaseflowSeparation(data$Q, filter_parameter = 0.98,passes = 1)
+hydrograph(streamflow = data$Q, streamflow2 = bfv$bt,timeSeries = data$Fecha, precip = data$P, P.units = "mm", S.units = "m3/2",S1.col = "black", S2.col = "red")
+
+```
+
+```{r}
+write.csv2(bfv$bt,"D:/Ejercicio_análisis_caudal_HF/FDC/output")
+```
+
+
